@@ -8,6 +8,13 @@ const ratioFormatter = new Intl.NumberFormat("es-CL", {
   maximumFractionDigits: 4,
 });
 
+export function formatUf(value: number | string | null | undefined): string {
+  if (value === null || value === undefined) return "—";
+  const n = typeof value === "string" ? Number(value) : value;
+  if (Number.isNaN(n)) return String(value);
+  return ufFormatter.format(n);
+}
+
 export function formatOptionalRatio(
   value: number | string | null | undefined,
 ): string {
