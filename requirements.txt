@@ -1,0 +1,6 @@
+# Prefer: uv sync
+# This file is optional for non-uv installs.
+pypdf>=5.0
+typing_extensions>=4.12
+python-dotenv>=1.0
+supabase>=2.0
