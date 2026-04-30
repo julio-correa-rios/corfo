@@ -1,9 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import type { VcReportRow } from "@/lib/corfo/types";
+import type { ExploradorVista, VcReportRow } from "@/lib/corfo/types";
 
 type Props = {
+  vista: ExploradorVista;
   reports: VcReportRow[];
   lineIds: string[];
   fundNames: string[];
@@ -16,15 +17,18 @@ function buildPath(
   reportId: number,
   line: string,
   fund: string,
+  vista: ExploradorVista,
 ): string {
   const p = new URLSearchParams();
   p.set("report", String(reportId));
+  p.set("vista", vista);
   if (line) p.set("line", line);
   if (fund) p.set("fund", fund);
   return `/explorador?${p.toString()}`;
 }
 
 export function ExploradorFilters({
+  vista,
   reports,
   lineIds,
   fundNames,
@@ -45,7 +49,7 @@ export function ExploradorFilters({
           value={selectedReportId}
           onChange={(e) => {
             const id = Number(e.target.value);
-            router.push(buildPath(id, "", ""));
+            router.push(buildPath(id, "", "", vista));
           }}
         >
           {reports.map((r) => (
@@ -66,7 +70,7 @@ export function ExploradorFilters({
           value={selectedLine}
           onChange={(e) => {
             const line = e.target.value;
-            router.push(buildPath(selectedReportId, line, ""));
+            router.push(buildPath(selectedReportId, line, "", vista));
           }}
         >
           <option value="">Todas las líneas</option>
@@ -88,7 +92,7 @@ export function ExploradorFilters({
           onChange={(e) => {
             const fund = e.target.value;
             router.push(
-              buildPath(selectedReportId, selectedLine, fund),
+              buildPath(selectedReportId, selectedLine, fund, vista),
             );
           }}
         >

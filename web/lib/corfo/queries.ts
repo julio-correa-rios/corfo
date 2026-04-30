@@ -1,7 +1,11 @@
 import "server-only";
 
 import { createServiceClient } from "@/lib/supabase/server";
-import type { FundLineRow, VcReportRow } from "@/lib/corfo/types";
+import type {
+  CompanyInvestmentRow,
+  FundLineRow,
+  VcReportRow,
+} from "@/lib/corfo/types";
 
 export async function fetchReports(): Promise<VcReportRow[]> {
   const supabase = createServiceClient();
@@ -74,4 +78,86 @@ export async function fetchFundLines(
   const { data, error } = await q;
   if (error) throw new Error(error.message);
   return (data ?? []) as FundLineRow[];
+}
+
+export async function fetchLineIdsForCompanyInvestments(
+  reportId: number,
+): Promise<string[]> {
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("company_investment")
+    .select("line_id")
+    .eq("report_id", reportId);
+
+  if (error) throw new Error(error.message);
+  const set = new Set<string>();
+  for (const row of data ?? []) {
+    if (row.line_id) set.add(row.line_id as string);
+  }
+  return [...set].sort();
+}
+
+export async function fetchFundNamesForCompanyInvestments(
+  reportId: number,
+  lineId: string | null,
+): Promise<string[]> {
+  const supabase = createServiceClient();
+  let q = supabase
+    .from("company_investment")
+    .select("fund_name")
+    .eq("report_id", reportId);
+
+  if (lineId) q = q.eq("line_id", lineId);
+
+  const { data, error } = await q;
+  if (error) throw new Error(error.message);
+  const set = new Set<string>();
+  for (const row of data ?? []) {
+    if (row.fund_name) set.add(row.fund_name as string);
+  }
+  return [...set].sort((a, b) => a.localeCompare(b, "es"));
+}
+
+export async function fetchCompanyInvestments(
+  reportId: number,
+  lineId: string | null,
+  fundName: string | null,
+): Promise<CompanyInvestmentRow[]> {
+  const supabase = createServiceClient();
+  let q = supabase
+    .from("company_investment")
+    .select(
+      `
+      id,
+      report_id,
+      line_id,
+      fund_name,
+      company_id,
+      company_size,
+      economic_activity,
+      first_investment_date,
+      total_invested_usd,
+      company ( id, legal_name )
+    `,
+    )
+    .eq("report_id", reportId);
+
+  if (lineId) q = q.eq("line_id", lineId);
+  if (fundName) q = q.eq("fund_name", fundName);
+
+  q = q.order("total_invested_usd", { ascending: false });
+
+  const { data, error } = await q;
+  if (error) throw new Error(error.message);
+  const raw = (data ?? []) as unknown as CompanyInvestmentRow[];
+  return raw.map((row) => {
+    const c = row.company as unknown;
+    let company: { id: number; legal_name: string } | null = null;
+    if (Array.isArray(c) && c[0]) {
+      company = c[0] as { id: number; legal_name: string };
+    } else if (c && typeof c === "object" && "legal_name" in c) {
+      company = c as { id: number; legal_name: string };
+    }
+    return { ...row, company };
+  });
 }

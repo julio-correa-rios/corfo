@@ -8,6 +8,13 @@ const ratioFormatter = new Intl.NumberFormat("es-CL", {
   maximumFractionDigits: 4,
 });
 
+const usdFormatter = new Intl.NumberFormat("es-CL", {
+  style: "currency",
+  currency: "USD",
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+});
+
 export function formatUf(value: number | string | null | undefined): string {
   if (value === null || value === undefined) return "—";
   const n = typeof value === "string" ? Number(value) : value;
@@ -22,6 +29,13 @@ export function formatOptionalRatio(
   const n = typeof value === "string" ? Number(value) : value;
   if (Number.isNaN(n)) return "—";
   return ratioFormatter.format(n);
+}
+
+export function formatUsd(value: number | string | null | undefined): string {
+  if (value === null || value === undefined) return "—";
+  const n = typeof value === "string" ? Number(value) : value;
+  if (Number.isNaN(n)) return String(value);
+  return usdFormatter.format(n);
 }
 
 export function formatDateCl(iso: string | null | undefined): string {
