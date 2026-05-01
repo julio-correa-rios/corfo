@@ -23,6 +23,9 @@ export type FundLineRow = {
 /** Vista del explorador en la query string */
 export type ExploradorVista = "fondos" | "empresas";
 
+/** Sub-vista dentro de empresas: tabla/ranking vs solo grafo */
+export type EmpresasPanel = "datos" | "grafo";
+
 export type CompanyInvestmentRow = {
   id: number;
   report_id: number;
