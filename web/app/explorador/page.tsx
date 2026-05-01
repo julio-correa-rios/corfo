@@ -1,4 +1,5 @@
 import { CompanyFundGraph } from "./company-fund-graph";
+import { EmpresasPanelToggle } from "./empresas-panel-toggle";
 import { ExploradorFilters } from "./explorador-filters";
 import { ExploradorVistaToggle } from "./explorador-vista-toggle";
 import { InvestmentBarChart } from "./investment-bar-chart";
@@ -11,7 +12,11 @@ import {
   fetchLineIdsForReport,
   fetchReports,
 } from "@/lib/corfo/queries";
-import type { ExploradorVista, VcReportRow } from "@/lib/corfo/types";
+import type {
+  EmpresasPanel,
+  ExploradorVista,
+  VcReportRow,
+} from "@/lib/corfo/types";
 import {
   aggregateTotalsByCompany,
   buildBipartiteGraphFromInvestments,
@@ -60,6 +65,14 @@ function resolveVista(raw: string | string[] | undefined): ExploradorVista {
   return "fondos";
 }
 
+function resolveEmpresasPanel(
+  raw: string | string[] | undefined,
+): EmpresasPanel {
+  const s = Array.isArray(raw) ? raw[0] : raw;
+  if (s === "grafo") return "grafo";
+  return "datos";
+}
+
 type PageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
@@ -77,6 +90,8 @@ export default async function ExploradorPage({ searchParams }: PageProps) {
   const sp = searchParams ? await searchParams : {};
   const reportId = resolveReportId(sp.report, reports);
   const vista = resolveVista(sp.vista);
+  const empresasPanel =
+    vista === "empresas" ? resolveEmpresasPanel(sp.panel) : "datos";
 
   if (loadError) {
     return (
@@ -170,10 +185,12 @@ export default async function ExploradorPage({ searchParams }: PageProps) {
         reportId={reportId}
         line={selectedLine}
         fund={selectedFund}
+        empresasPanel={empresasPanel}
       />
 
       <ExploradorFilters
         vista={vista}
+        empresasPanel={empresasPanel}
         reports={reports}
         lineIds={lineIds}
         fundNames={fundNames}
@@ -181,6 +198,15 @@ export default async function ExploradorPage({ searchParams }: PageProps) {
         selectedLine={selectedLine}
         selectedFund={selectedFund}
       />
+
+      {vista === "empresas" ? (
+        <EmpresasPanelToggle
+          panel={empresasPanel}
+          reportId={reportId}
+          line={selectedLine}
+          fund={selectedFund}
+        />
+      ) : null}
 
       {vista === "fondos" ? (
         <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800">
@@ -247,15 +273,15 @@ export default async function ExploradorPage({ searchParams }: PageProps) {
             </tbody>
           </table>
         </div>
+      ) : empresasPanel === "grafo" ? (
+        <section className="rounded-xl border border-zinc-200 bg-zinc-50/80 p-4 dark:border-zinc-800 dark:bg-zinc-900/40">
+          <h2 className="mb-3 text-sm font-semibold text-zinc-800 dark:text-zinc-100">
+            Red fondos ↔ empresas
+          </h2>
+          <CompanyFundGraph graph={graphPayload} tall />
+        </section>
       ) : (
         <>
-          <section className="rounded-xl border border-zinc-200 bg-zinc-50/80 p-4 dark:border-zinc-800 dark:bg-zinc-900/40">
-            <h2 className="mb-3 text-sm font-semibold text-zinc-800 dark:text-zinc-100">
-              Red fondos ↔ empresas
-            </h2>
-            <CompanyFundGraph graph={graphPayload} />
-          </section>
-
           {companyTotals.length > 0 ? (
             <section className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
               <InvestmentBarChart data={companyTotals} maxBars={10} />
@@ -322,8 +348,12 @@ export default async function ExploradorPage({ searchParams }: PageProps) {
 
       <p className="text-xs text-zinc-500 dark:text-zinc-500">
         Vista <strong>Fondos</strong>: montos en UF (tabla de fondos del PDF).
-        Vista <strong>Empresas</strong>: montos en US$ por fila de inversión. El
-        resumen agregado por línea en US$ sigue en{" "}
+        Vista <strong>Empresas</strong>: montos en US$; usa{" "}
+        <strong>Tabla y ranking</strong> o <strong>Red (grafo)</strong> (
+        <code className="rounded bg-zinc-200 px-1 dark:bg-zinc-800">
+          panel=datos|grafo
+        </code>
+        ). El resumen por línea en US$ sigue en{" "}
         <code className="rounded bg-zinc-200 px-1 dark:bg-zinc-800">
           line_summary
         </code>

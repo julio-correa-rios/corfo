@@ -1,10 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import type { ExploradorVista, VcReportRow } from "@/lib/corfo/types";
+import { exploradorHref } from "@/lib/explorador-href";
+import type {
+  EmpresasPanel,
+  ExploradorVista,
+  VcReportRow,
+} from "@/lib/corfo/types";
 
 type Props = {
   vista: ExploradorVista;
+  empresasPanel: EmpresasPanel;
   reports: VcReportRow[];
   lineIds: string[];
   fundNames: string[];
@@ -13,22 +19,9 @@ type Props = {
   selectedFund: string;
 };
 
-function buildPath(
-  reportId: number,
-  line: string,
-  fund: string,
-  vista: ExploradorVista,
-): string {
-  const p = new URLSearchParams();
-  p.set("report", String(reportId));
-  p.set("vista", vista);
-  if (line) p.set("line", line);
-  if (fund) p.set("fund", fund);
-  return `/explorador?${p.toString()}`;
-}
-
 export function ExploradorFilters({
   vista,
+  empresasPanel,
   reports,
   lineIds,
   fundNames,
@@ -49,7 +42,16 @@ export function ExploradorFilters({
           value={selectedReportId}
           onChange={(e) => {
             const id = Number(e.target.value);
-            router.push(buildPath(id, "", "", vista));
+            router.push(
+              exploradorHref({
+                reportId: id,
+                line: "",
+                fund: "",
+                vista,
+                empresasPanel:
+                  vista === "empresas" ? empresasPanel : undefined,
+              }),
+            );
           }}
         >
           {reports.map((r) => (
@@ -70,7 +72,16 @@ export function ExploradorFilters({
           value={selectedLine}
           onChange={(e) => {
             const line = e.target.value;
-            router.push(buildPath(selectedReportId, line, "", vista));
+            router.push(
+              exploradorHref({
+                reportId: selectedReportId,
+                line,
+                fund: "",
+                vista,
+                empresasPanel:
+                  vista === "empresas" ? empresasPanel : undefined,
+              }),
+            );
           }}
         >
           <option value="">Todas las líneas</option>
@@ -92,7 +103,14 @@ export function ExploradorFilters({
           onChange={(e) => {
             const fund = e.target.value;
             router.push(
-              buildPath(selectedReportId, selectedLine, fund, vista),
+              exploradorHref({
+                reportId: selectedReportId,
+                line: selectedLine,
+                fund,
+                vista,
+                empresasPanel:
+                  vista === "empresas" ? empresasPanel : undefined,
+              }),
             );
           }}
         >

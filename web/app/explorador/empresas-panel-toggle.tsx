@@ -1,33 +1,27 @@
 import { exploradorHref } from "@/lib/explorador-href";
-import type { EmpresasPanel, ExploradorVista } from "@/lib/corfo/types";
+import type { EmpresasPanel } from "@/lib/corfo/types";
 
 type Props = {
-  vista: ExploradorVista;
+  panel: EmpresasPanel;
   reportId: number;
   line: string;
   fund: string;
-  empresasPanel: EmpresasPanel;
 };
 
-export function ExploradorVistaToggle({
-  vista,
-  reportId,
-  line,
-  fund,
-  empresasPanel,
-}: Props) {
-  const fondosHref = exploradorHref({
-    reportId,
-    line,
-    fund,
-    vista: "fondos",
-  });
-  const empresasHref = exploradorHref({
+export function EmpresasPanelToggle({ panel, reportId, line, fund }: Props) {
+  const datosHref = exploradorHref({
     reportId,
     line,
     fund,
     vista: "empresas",
-    empresasPanel,
+    empresasPanel: "datos",
+  });
+  const grafoHref = exploradorHref({
+    reportId,
+    line,
+    fund,
+    vista: "empresas",
+    empresasPanel: "grafo",
   });
 
   const pill =
@@ -41,23 +35,23 @@ export function ExploradorVistaToggle({
     <div
       className="flex flex-wrap gap-2"
       role="tablist"
-      aria-label="Vista del explorador"
+      aria-label="Contenido vista empresas"
     >
       <a
         role="tab"
-        aria-selected={vista === "fondos"}
-        href={fondosHref}
-        className={`${pill} ${vista === "fondos" ? active : inactive}`}
+        aria-selected={panel === "datos"}
+        href={datosHref}
+        className={`${pill} ${panel === "datos" ? active : inactive}`}
       >
-        Fondos (UF)
+        Tabla y ranking
       </a>
       <a
         role="tab"
-        aria-selected={vista === "empresas"}
-        href={empresasHref}
-        className={`${pill} ${vista === "empresas" ? active : inactive}`}
+        aria-selected={panel === "grafo"}
+        href={grafoHref}
+        className={`${pill} ${panel === "grafo" ? active : inactive}`}
       >
-        Empresas invertidas (US$)
+        Red fondos–empresas (grafo)
       </a>
     </div>
   );
