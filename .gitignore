@@ -1,4 +1,5 @@
 .vendor/
 .env
-
+.venv/
 data/
+.DS_Store
