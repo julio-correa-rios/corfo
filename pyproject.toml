@@ -9,6 +9,8 @@ dependencies = [
     "typing_extensions>=4.12",
     "python-dotenv>=1.0",
     "supabase>=2.0",
+    "matplotlib>=3.11.0",
+    "seaborn>=0.13.2",
 ]
 
 [project.optional-dependencies]
