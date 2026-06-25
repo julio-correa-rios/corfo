@@ -4,28 +4,28 @@ import type { EmpresasPanel, ExploradorVista } from "@/lib/corfo/types";
 type Props = {
   vista: ExploradorVista;
   reportId: number;
-  line: string;
-  fund: string;
+  lines: string[];
+  funds: string[];
   empresasPanel: EmpresasPanel;
 };
 
 export function ExploradorVistaToggle({
   vista,
   reportId,
-  line,
-  fund,
+  lines,
+  funds,
   empresasPanel,
 }: Props) {
   const fondosHref = exploradorHref({
     reportId,
-    line,
-    fund,
+    lines,
+    funds,
     vista: "fondos",
   });
   const empresasHref = exploradorHref({
     reportId,
-    line,
-    fund,
+    lines,
+    funds,
     vista: "empresas",
     empresasPanel,
   });

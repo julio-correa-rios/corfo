@@ -7,6 +7,7 @@ import type {
   ExploradorVista,
   VcReportRow,
 } from "@/lib/corfo/types";
+import { MultiSelectFilter } from "./multi-select-filter";
 
 type Props = {
   vista: ExploradorVista;
@@ -15,9 +16,13 @@ type Props = {
   lineIds: string[];
   fundNames: string[];
   selectedReportId: number;
-  selectedLine: string;
-  selectedFund: string;
+  selectedLines: string[];
+  selectedFunds: string[];
 };
+
+function formatFundName(name: string): string {
+  return name.length > 80 ? `${name.slice(0, 77)}…` : name;
+}
 
 export function ExploradorFilters({
   vista,
@@ -26,10 +31,28 @@ export function ExploradorFilters({
   lineIds,
   fundNames,
   selectedReportId,
-  selectedLine,
-  selectedFund,
+  selectedLines,
+  selectedFunds,
 }: Props) {
   const router = useRouter();
+
+  function navigate(
+    overrides: Partial<{
+      reportId: number;
+      lines: string[];
+      funds: string[];
+    }> = {},
+  ) {
+    router.push(
+      exploradorHref({
+        reportId: overrides.reportId ?? selectedReportId,
+        lines: overrides.lines ?? selectedLines,
+        funds: overrides.funds ?? selectedFunds,
+        vista,
+        empresasPanel: vista === "empresas" ? empresasPanel : undefined,
+      }),
+    );
+  }
 
   return (
     <div className="grid gap-4 sm:grid-cols-3">
@@ -41,17 +64,7 @@ export function ExploradorFilters({
           className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
           value={selectedReportId}
           onChange={(e) => {
-            const id = Number(e.target.value);
-            router.push(
-              exploradorHref({
-                reportId: id,
-                line: "",
-                fund: "",
-                vista,
-                empresasPanel:
-                  vista === "empresas" ? empresasPanel : undefined,
-              }),
-            );
+            navigate({ reportId: Number(e.target.value), lines: [], funds: [] });
           }}
         >
           {reports.map((r) => (
@@ -63,65 +76,26 @@ export function ExploradorFilters({
         </select>
       </label>
 
-      <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium text-zinc-700 dark:text-zinc-300">
-          Línea CORFO
-        </span>
-        <select
-          className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
-          value={selectedLine}
-          onChange={(e) => {
-            const line = e.target.value;
-            router.push(
-              exploradorHref({
-                reportId: selectedReportId,
-                line,
-                fund: "",
-                vista,
-                empresasPanel:
-                  vista === "empresas" ? empresasPanel : undefined,
-              }),
-            );
-          }}
-        >
-          <option value="">Todas las líneas</option>
-          {lineIds.map((code) => (
-            <option key={code} value={code}>
-              {code}
-            </option>
-          ))}
-        </select>
-      </label>
+      <MultiSelectFilter
+        label="Línea CORFO"
+        options={lineIds}
+        selected={selectedLines}
+        allLabel="Todas las líneas"
+        onChange={(lines) => {
+          navigate({ lines, funds: [] });
+        }}
+      />
 
-      <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium text-zinc-700 dark:text-zinc-300">
-          Fondo
-        </span>
-        <select
-          className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
-          value={selectedFund}
-          onChange={(e) => {
-            const fund = e.target.value;
-            router.push(
-              exploradorHref({
-                reportId: selectedReportId,
-                line: selectedLine,
-                fund,
-                vista,
-                empresasPanel:
-                  vista === "empresas" ? empresasPanel : undefined,
-              }),
-            );
-          }}
-        >
-          <option value="">Todos los fondos</option>
-          {fundNames.map((name) => (
-            <option key={name} value={name}>
-              {name.length > 80 ? `${name.slice(0, 77)}…` : name}
-            </option>
-          ))}
-        </select>
-      </label>
+      <MultiSelectFilter
+        label="Fondo"
+        options={fundNames}
+        selected={selectedFunds}
+        allLabel="Todos los fondos"
+        formatOption={formatFundName}
+        onChange={(funds) => {
+          navigate({ funds });
+        }}
+      />
     </div>
   );
 }
