@@ -5,6 +5,7 @@ Planned enhancements for `/explorador` (CORFO capital de riesgo), ordered from e
 | Step | Feature | Branch | Status |
 |------|---------|--------|--------|
 | 1 | Multi-select filters (línea + fondo) | `feat/explorador-multi-select-filters` | Done |
+| — | Fund filter tags + graph stability (follow-up) | `fix/web-graph-stable-filter` | Tags done; graph planned |
 | 2 | Time series + filter by línea de apertura (year) | `feat/explorador-timeseries-opening-year` | Planned |
 | 3 | Exchange rates → amounts in CLP | `feat/explorador-fx-clp` | Planned |
 
@@ -35,3 +36,4 @@ Do **not** bundle all three in a single branch — different scope, risk, and re
 - [01-multi-select-filters.md](./01-multi-select-filters.md)
 - [02-timeseries-opening-year.md](./02-timeseries-opening-year.md)
 - [03-fx-clp-conversion.md](./03-fx-clp-conversion.md)
+- [04-graph-stable-layout.md](./04-graph-stable-layout.md) — follow-up after step 1
