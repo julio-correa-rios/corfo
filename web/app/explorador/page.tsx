@@ -2,6 +2,7 @@ import { CompanyFundGraph } from "./company-fund-graph";
 import { EmpresasPanelToggle } from "./empresas-panel-toggle";
 import { ExploradorFilters } from "./explorador-filters";
 import { ExploradorVistaToggle } from "./explorador-vista-toggle";
+import { FundFilterTags } from "./fund-filter-tags";
 import { InvestmentBarChart } from "./investment-bar-chart";
 import {
   fetchCompanyInvestments,
@@ -21,6 +22,7 @@ import {
   aggregateTotalsByCompany,
   buildBipartiteGraphFromInvestments,
 } from "@/lib/corfo/graph";
+import { parseMultiParam } from "@/lib/explorador-params";
 import {
   formatDateCl,
   formatOptionalRatio,
@@ -39,24 +41,6 @@ function resolveReportId(
     return reports[0].id;
   }
   return id;
-}
-
-function resolveLine(
-  raw: string | string[] | undefined,
-  allowed: Set<string>,
-): string {
-  const s = Array.isArray(raw) ? raw[0] : raw;
-  if (!s || !allowed.has(s)) return "";
-  return s;
-}
-
-function resolveFund(
-  raw: string | string[] | undefined,
-  allowed: Set<string>,
-): string {
-  const s = Array.isArray(raw) ? raw[0] : raw;
-  if (!s || !allowed.has(s)) return "";
-  return s;
 }
 
 function resolveVista(raw: string | string[] | undefined): ExploradorVista {
@@ -129,35 +113,24 @@ export default async function ExploradorPage({ searchParams }: PageProps) {
       : await fetchLineIdsForReport(reportId);
 
   const lineAllowed = new Set(lineIds);
-  const selectedLine = resolveLine(sp.line, lineAllowed);
+  const selectedLines = parseMultiParam(sp.line, lineAllowed);
 
   const fundNames =
     vista === "empresas"
-      ? await fetchFundNamesForCompanyInvestments(
-          reportId,
-          selectedLine || null,
-        )
-      : await fetchFundNames(reportId, selectedLine || null);
+      ? await fetchFundNamesForCompanyInvestments(reportId, selectedLines)
+      : await fetchFundNames(reportId, selectedLines);
 
   const fundAllowed = new Set(fundNames);
-  const selectedFund = resolveFund(sp.fund, fundAllowed);
+  const selectedFunds = parseMultiParam(sp.fund, fundAllowed);
 
   const fundRows =
     vista === "fondos"
-      ? await fetchFundLines(
-          reportId,
-          selectedLine || null,
-          selectedFund || null,
-        )
+      ? await fetchFundLines(reportId, selectedLines, selectedFunds)
       : [];
 
   const companyRows =
     vista === "empresas"
-      ? await fetchCompanyInvestments(
-          reportId,
-          selectedLine || null,
-          selectedFund || null,
-        )
+      ? await fetchCompanyInvestments(reportId, selectedLines, selectedFunds)
       : [];
 
   const graphPayload =
@@ -183,8 +156,8 @@ export default async function ExploradorPage({ searchParams }: PageProps) {
       <ExploradorVistaToggle
         vista={vista}
         reportId={reportId}
-        line={selectedLine}
-        fund={selectedFund}
+        lines={selectedLines}
+        funds={selectedFunds}
         empresasPanel={empresasPanel}
       />
 
@@ -195,18 +168,34 @@ export default async function ExploradorPage({ searchParams }: PageProps) {
         lineIds={lineIds}
         fundNames={fundNames}
         selectedReportId={reportId}
-        selectedLine={selectedLine}
-        selectedFund={selectedFund}
+        selectedLines={selectedLines}
+        selectedFunds={selectedFunds}
       />
 
       {vista === "empresas" ? (
-        <EmpresasPanelToggle
-          panel={empresasPanel}
+        <div className="flex flex-col gap-3">
+          <EmpresasPanelToggle
+            panel={empresasPanel}
+            reportId={reportId}
+            lines={selectedLines}
+            funds={selectedFunds}
+          />
+          <FundFilterTags
+            reportId={reportId}
+            lines={selectedLines}
+            funds={selectedFunds}
+            vista={vista}
+            empresasPanel={empresasPanel}
+          />
+        </div>
+      ) : (
+        <FundFilterTags
           reportId={reportId}
-          line={selectedLine}
-          fund={selectedFund}
+          lines={selectedLines}
+          funds={selectedFunds}
+          vista={vista}
         />
-      ) : null}
+      )}
 
       {vista === "fondos" ? (
         <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800">

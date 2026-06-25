@@ -36,7 +36,7 @@ export async function fetchLineIdsForReport(reportId: number): Promise<string[]>
 
 export async function fetchFundNames(
   reportId: number,
-  lineId: string | null,
+  lineIds: string[],
 ): Promise<string[]> {
   const supabase = createServiceClient();
   let q = supabase
@@ -45,7 +45,7 @@ export async function fetchFundNames(
     .eq("report_id", reportId)
     .eq("is_subtotal", false);
 
-  if (lineId) q = q.eq("line_id", lineId);
+  if (lineIds.length) q = q.in("line_id", lineIds);
 
   const { data, error } = await q;
   if (error) throw new Error(error.message);
@@ -58,8 +58,8 @@ export async function fetchFundNames(
 
 export async function fetchFundLines(
   reportId: number,
-  lineId: string | null,
-  fundName: string | null,
+  lineIds: string[],
+  fundNames: string[],
 ): Promise<FundLineRow[]> {
   const supabase = createServiceClient();
   let q = supabase
@@ -72,8 +72,8 @@ export async function fetchFundLines(
     .order("line_id", { ascending: true })
     .order("fund_name", { ascending: true });
 
-  if (lineId) q = q.eq("line_id", lineId);
-  if (fundName) q = q.eq("fund_name", fundName);
+  if (lineIds.length) q = q.in("line_id", lineIds);
+  if (fundNames.length) q = q.in("fund_name", fundNames);
 
   const { data, error } = await q;
   if (error) throw new Error(error.message);
@@ -99,7 +99,7 @@ export async function fetchLineIdsForCompanyInvestments(
 
 export async function fetchFundNamesForCompanyInvestments(
   reportId: number,
-  lineId: string | null,
+  lineIds: string[],
 ): Promise<string[]> {
   const supabase = createServiceClient();
   let q = supabase
@@ -107,7 +107,7 @@ export async function fetchFundNamesForCompanyInvestments(
     .select("fund_name")
     .eq("report_id", reportId);
 
-  if (lineId) q = q.eq("line_id", lineId);
+  if (lineIds.length) q = q.in("line_id", lineIds);
 
   const { data, error } = await q;
   if (error) throw new Error(error.message);
@@ -120,8 +120,8 @@ export async function fetchFundNamesForCompanyInvestments(
 
 export async function fetchCompanyInvestments(
   reportId: number,
-  lineId: string | null,
-  fundName: string | null,
+  lineIds: string[],
+  fundNames: string[],
 ): Promise<CompanyInvestmentRow[]> {
   const supabase = createServiceClient();
   let q = supabase
@@ -142,8 +142,8 @@ export async function fetchCompanyInvestments(
     )
     .eq("report_id", reportId);
 
-  if (lineId) q = q.eq("line_id", lineId);
-  if (fundName) q = q.eq("fund_name", fundName);
+  if (lineIds.length) q = q.in("line_id", lineIds);
+  if (fundNames.length) q = q.in("fund_name", fundNames);
 
   q = q.order("total_invested_usd", { ascending: false });
 

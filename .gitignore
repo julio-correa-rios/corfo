@@ -1,4 +1,12 @@
 .vendor/
 .env
-
+.venv/
 data/
+.DS_Store
+
+notebooks/
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd

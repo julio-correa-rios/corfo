@@ -4,22 +4,22 @@ import type { EmpresasPanel } from "@/lib/corfo/types";
 type Props = {
   panel: EmpresasPanel;
   reportId: number;
-  line: string;
-  fund: string;
+  lines: string[];
+  funds: string[];
 };
 
-export function EmpresasPanelToggle({ panel, reportId, line, fund }: Props) {
+export function EmpresasPanelToggle({ panel, reportId, lines, funds }: Props) {
   const datosHref = exploradorHref({
     reportId,
-    line,
-    fund,
+    lines,
+    funds,
     vista: "empresas",
     empresasPanel: "datos",
   });
   const grafoHref = exploradorHref({
     reportId,
-    line,
-    fund,
+    lines,
+    funds,
     vista: "empresas",
     empresasPanel: "grafo",
   });

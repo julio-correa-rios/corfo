@@ -2,8 +2,8 @@ import type { EmpresasPanel, ExploradorVista } from "@/lib/corfo/types";
 
 export function exploradorHref(params: {
   reportId: number;
-  line: string;
-  fund: string;
+  lines: string[];
+  funds: string[];
   vista: ExploradorVista;
   /** Solo aplica si `vista` es empresas; con fondos se ignora. */
   empresasPanel?: EmpresasPanel;
@@ -11,8 +11,12 @@ export function exploradorHref(params: {
   const p = new URLSearchParams();
   p.set("report", String(params.reportId));
   p.set("vista", params.vista);
-  if (params.line) p.set("line", params.line);
-  if (params.fund) p.set("fund", params.fund);
+  for (const line of params.lines) {
+    p.append("line", line);
+  }
+  for (const fund of params.funds) {
+    p.append("fund", fund);
+  }
   if (params.vista === "empresas") {
     p.set("panel", params.empresasPanel ?? "datos");
   }
